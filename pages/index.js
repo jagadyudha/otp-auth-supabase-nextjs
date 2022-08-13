@@ -9,10 +9,7 @@ const Home = () => {
   const [form, setForm] = React.useState({ phone: "", token: "" });
 
   //state to store page
-  const [isVerified, setIsVerified] = React.useState(false);
-
-  // state to handle login
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [status, setStatus] = React.useState("loading");
 
   //handle otplogin
   const otpLogin = async (form) => {
@@ -21,7 +18,7 @@ const Home = () => {
       if (error) {
         throw error;
       } else {
-        setIsVerified(true);
+        setStatus("otp");
       }
     } catch (error) {
       alert(error.error_description || error.message);
@@ -32,7 +29,11 @@ const Home = () => {
   const otpVerify = async (form) => {
     try {
       const { error } = await supabase.auth.verifyOTP(form);
-      if (error) throw error;
+      if (!error) {
+        setStatus("success");
+      } else {
+        throw error;
+      }
     } catch (error) {
       alert(error.error_description || error.message);
     }
@@ -40,11 +41,9 @@ const Home = () => {
 
   React.useEffect(() => {
     setUser(supabase.auth.user());
-    setIsLoading(false);
-  }),
-    [];
+  }, [status]);
 
-  if (isLoading) return <div></div>;
+  console.log(user);
 
   return (
     <main className="max-w-md mx-auto px-8 h-screen flex items-center">
@@ -64,7 +63,7 @@ const Home = () => {
         </div>
       ) : (
         <>
-          {isVerified ? (
+          {status === "otp" ? (
             <div>
               <h1 className="font-bold text-4xl">Verify your phone number</h1>
               <p className="text-gray-500 my-8">Enter your OTP code here</p>
